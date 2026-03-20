@@ -1,0 +1,251 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Upload area */
+.upload-zone {
+  border: 2px dashed #333;
+  border-radius: 12px;
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #111;
+}
+
+.upload-zone:hover {
+  border-color: #555;
+  background: #151515;
+}
+
+.upload-zone.dragging {
+  border-color: #6c63ff;
+  background: rgba(108, 99, 255, 0.05);
+}
+
+.upload-zone.has-file {
+  border-color: #6c63ff;
+  border-style: solid;
+}
+
+/* Generate button */
+.generate-btn {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #6c63ff, #4f46e5);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.generate-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c74ff, #5f56f5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(108, 99, 255, 0.3);
+}
+
+.generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* File badge */
+.file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(108, 99, 255, 0.1);
+  border: 1px solid rgba(108, 99, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: #a5a0ff;
+}
+
+.file-badge button {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  line-height: 1;
+}
+
+.file-badge button:hover {
+  color: #ff6b6b;
+}
+
+/* Loading spinner */
+.loading-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #222;
+  border-top-color: #6c63ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Notes display */
+.notes-output {
+  background: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 12px;
+  padding: 32px;
+  margin-top: 24px;
+}
+
+.notes-output h2 {
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 28px 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #252525;
+}
+
+.notes-output h2:first-child {
+  margin-top: 0;
+}
+
+.notes-output h3 {
+  color: #d0d0d0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 20px 0 8px 0;
+}
+
+.notes-output p {
+  color: #b0b0b0;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  margin: 6px 0;
+}
+
+.notes-output ul,
+.notes-output ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.notes-output li {
+  color: #b0b0b0;
+  font-size: 0.92rem;
+  line-height: 1.75;
+  margin: 4px 0;
+}
+
+.notes-output strong {
+  color: #e0e0e0;
+}
+
+.notes-output em {
+  color: #a5a0ff;
+  font-style: italic;
+}
+
+.notes-output code {
+  background: #1a1a2e;
+  color: #a5a0ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.notes-output hr {
+  border: none;
+  border-top: 1px solid #252525;
+  margin: 24px 0;
+}
+
+/* Toggle button */
+.toggle-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  border-color: #555;
+  color: #bbb;
+}
+
+/* Extracted text box */
+.extracted-text-box {
+  margin-top: 16px;
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  border-radius: 10px;
+  padding: 24px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.extracted-text-box p {
+  color: #888;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* Error box */
+.error-box {
+  background: rgba(230, 57, 70, 0.08);
+  border: 1px solid rgba(230, 57, 70, 0.3);
+  border-radius: 10px;
+  padding: 16px 20px;
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+/* Supported formats */
+.formats {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.format-tag {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
