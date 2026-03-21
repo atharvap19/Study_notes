@@ -3,7 +3,7 @@ import tempfile
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
-from file_utils import extract_text, ALLOWED_EXTENSIONS
+from file_utils import extract_text, extract_chunks, format_chunks, ALLOWED_EXTENSIONS
 from summarizer import generate_notes
 
 app = FastAPI(title="DocNotes AI", version="2.0.0")
@@ -49,13 +49,14 @@ async def process_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
 
-    # --- Step 1: Extract text ---
+    # --- Step 1: Extract chunks ---
     try:
         print(f"[1/2] Extracting text from: {file.filename}")
-        text = extract_text(tmp_path)
-        if not text.strip():
+        chunks = extract_chunks(tmp_path)
+        structured_text = format_chunks(chunks)
+        if not structured_text.strip():
             raise ValueError("No text could be extracted from the file.")
-        print(f"      Extracted {len(text)} chars")
+        print(f"      Extracted {len(chunks)} chunks, {len(structured_text)} chars")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Text extraction failed: {str(e)}")
     finally:
@@ -64,9 +65,11 @@ async def process_file(file: UploadFile = File(...)):
     # --- Step 2: Generate notes ---
     try:
         print("[2/2] Generating structured notes with Groq...")
-        notes = generate_notes(text)
+        notes = generate_notes(structured_text)
         print("      Notes generated successfully.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Note generation failed: {str(e)}")
 
-    return {"text": text, "notes": notes}
+    # Return chunks metadata for frontend
+    chunks_meta = [{"section": c["section"], "source": c["source"]} for c in chunks]
+    return {"text": structured_text, "notes": notes, "chunks": chunks_meta}
