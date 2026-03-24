@@ -7,3 +7,6 @@ python-pptx
 PyPDF2
 python-docx
 openpyxl
+pandas
+fpdf2
+chromadb
