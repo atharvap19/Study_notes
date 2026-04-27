@@ -71,12 +71,14 @@ exports.documentAI = async (req, res, next) => {
       return res.status(404).json({ message: `File not found on server: ${material.file_name}` });
     }
 
-    const docAiUrl = `${process.env.DOCAI_BASE_URL || 'http://localhost:8000'}/process-document`;
-    const response = await axios.post(
-      docAiUrl,
-      { file_path: absPath },
-      { timeout: 120_000 }
-    );
+    const form = new FormData();
+    form.append('file', fs.createReadStream(absPath), material.file_name);
+
+    const docAiUrl = `${process.env.DOCAI_BASE_URL || 'http://localhost:8000'}/process-file`;
+    const response = await axios.post(docAiUrl, form, {
+      headers: form.getHeaders(),
+      timeout: 120_000,
+    });
 
     const { notes, flashcards, quiz, key_concepts, highlights, mindmap } = response.data;
 
@@ -92,7 +94,7 @@ exports.documentAI = async (req, res, next) => {
   } catch (err) {
     if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT') {
       return res.status(502).json({
-        message: 'Document AI service is unavailable. Ensure the Python backend is running on port 8000.',
+        message: 'Document AI service is unavailable. Ensure DOCAI_BASE_URL points to a running Python backend.',
       });
     }
     next(err);

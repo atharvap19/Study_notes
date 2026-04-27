@@ -17,10 +17,16 @@ from rag import index_document, retrieve, get_current_collection
 
 app = FastAPI(title="DocNotes AI", version="2.0.0")
 
-# Allow requests from the Next.js dev server
+
+def _get_allowed_origins():
+    raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
+    origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+    return origins
+
+# Allow requests from configured frontend origins (comma-separated ALLOWED_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=_get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

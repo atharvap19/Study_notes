@@ -183,7 +183,7 @@ async function loadMaterials() {
 /* ── Open DocNotes AI (Next.js) in a new tab ───────────────────────────── */
 function openDocNotesAI() {
   const token = localStorage.getItem('token');
-  window.open(`http://localhost:3001?token=${encodeURIComponent(token)}`, '_blank');
+  window.open(`/docnotes?token=${encodeURIComponent(token)}`, '_blank');
 }
 
 /* ── Legacy modal helpers (kept for backward compat) ───────────────────── */

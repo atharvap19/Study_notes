@@ -146,6 +146,8 @@ cd studyplanner
 ### 2. Set up the database
 ```bash
 mysql -u root -p < auth-system/database/schema.sql
+mysql -u root -p < auth-system/database/migrate_subjects.sql
+mysql -u root -p < auth-system/database/migrate_tests.sql
 mysql -u root -p < auth-system/database/migrate_final.sql
 ```
 
@@ -158,6 +160,8 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=vidnotes_auth
+DB_SSL=false
+DB_SSL_REJECT_UNAUTHORIZED=false
 
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=24h
@@ -165,6 +169,7 @@ JWT_EXPIRES_IN=24h
 PORT=3000
 
 DOCAI_BASE_URL=http://localhost:8000
+DOCAI_FRONTEND_URL=http://localhost:3001
 
 GROQ_API_KEY=your_groq_api_key
 GROQ_BASE_URL=https://api.groq.com/openai/v1
@@ -176,11 +181,13 @@ GROQ_MODEL=llama-3.3-70b-versatile
 GROQ_API_KEY=your_groq_api_key
 GROQ_BASE_URL=https://api.groq.com/openai/v1
 GROQ_MODEL=llama-3.3-70b-versatile
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 ```
 
 **`frontend/.env.local`**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+NEXT_PUBLIC_AUTH_BACKEND_URL=http://localhost:3000
 ```
 
 ### 4. Install dependencies
@@ -210,6 +217,10 @@ cd frontend && npm run dev
 ```
 
 Then open **http://localhost:3000** to log in.
+
+### Free deployment
+
+For a no-cost hosting setup (Vercel + Render + TiDB), follow [DEPLOY_FREE.md](DEPLOY_FREE.md).
 
 ---
 

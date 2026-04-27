@@ -10,6 +10,7 @@ const teacherRoutes  = require('./routes/teacher');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+const DOCAI_FRONTEND_URL = process.env.DOCAI_FRONTEND_URL || 'http://localhost:3001';
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors());
@@ -31,6 +32,17 @@ app.use('/api/teacher',  teacherRoutes);
 // ── Page Routes ─────────────────────────────────────────────────────────────
 app.get('/',         (req, res) => res.sendFile(path.join(__dirname, '../frontend/login.html')));
 app.get('/login',    (req, res) => res.sendFile(path.join(__dirname, '../frontend/login.html')));
+app.get('/docnotes', (req, res) => {
+  try {
+    const target = new URL(DOCAI_FRONTEND_URL);
+    const token = typeof req.query.token === 'string' ? req.query.token.trim() : '';
+    if (token) target.searchParams.set('token', token);
+    return res.redirect(target.toString());
+  } catch (err) {
+    console.error('[docnotes redirect error]', err.message);
+    return res.status(500).json({ message: 'DOCAI_FRONTEND_URL is not configured correctly' });
+  }
+});
 app.get('/student',  (req, res) => res.sendFile(path.join(__dirname, '../frontend/student-dashboard.html')));
 app.get('/teacher',  (req, res) => res.sendFile(path.join(__dirname, '../frontend/teacher-dashboard.html')));
 
