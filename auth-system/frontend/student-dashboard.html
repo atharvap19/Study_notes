@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard — StudyPlanner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">📚</div>
+      <span class="logo-text">StudyPlanner</span>
+    </div>
+
+    <div class="nav-item active" onclick="showSection('study-materials')">
+      <span class="icon">📖</span> Study Materials
+    </div>
+    <div class="nav-item" onclick="showSection('tests')">
+      <span class="icon">📝</span> Tests
+    </div>
+    <div class="nav-item" onclick="showSection('upcoming')">
+      <span class="icon">📅</span> Schedule
+    </div>
+    <div class="nav-item" onclick="showSection('progress')">
+      <span class="icon">📊</span> Progress
+    </div>
+    <div class="nav-item" onclick="openDocNotesAI()">
+      <span class="icon">🤖</span> DocNotes AI
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="openProfile()" style="cursor:pointer" title="View profile">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="user-meta">
+          <div class="user-name" id="sidebar-name">Loading…</div>
+          <div class="user-role">Student</div>
+        </div>
+      </div>
+      <div class="nav-item" onclick="logout()" style="margin-top:0.4rem">
+        <span class="icon">🚪</span> Logout
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────── -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="topbar-title">Study Materials</h1>
+        <div class="subtitle" id="topbar-sub">Your assigned documents</div>
+      </div>
+      <div class="notif-wrap" id="notif-wrap">
+        <button class="notif-btn" onclick="toggleNotifications()" title="Notifications">
+          🔔
+          <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+        </button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-dd-header">
+            <span style="font-weight:700;font-size:0.88rem">Notifications</span>
+            <button onclick="markAllRead()" class="notif-read-all">Mark all read</button>
+          </div>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="alert-main" class="alert"></div>
+
+      <!-- Study Materials Section -->
+      <section id="section-study-materials">
+        <div class="section-header">
+          <span class="section-title">📚 Study Materials</span>
+          <span class="badge" id="material-count">0 files</span>
+        </div>
+
+        <div id="materials-container" class="materials-grid">
+          <!-- Populated by student.js -->
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading materials…</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tests Section -->
+      <section id="section-tests" style="display:none">
+        <div class="section-header">
+          <span class="section-title">📝 Tests</span>
+          <span class="badge" id="tests-count">0</span>
+        </div>
+        <div id="tests-container">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading tests…</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Study Plan -->
+      <section id="section-upcoming" style="display:none">
+        <div class="section-header">
+          <span class="section-title">🤖 AI Study Plan</span>
+          <button class="btn btn-accent" id="btn-generate-plan" onclick="requestStudyPlan()" style="font-size:0.82rem">
+            ✨ Generate Plan
+          </button>
+        </div>
+        <div id="study-plan-root">
+          <div class="placeholder-box">
+            <div class="ph-icon">🗓️</div>
+            <h3>Your personalised plan awaits</h3>
+            <p>Click <strong>✨ Generate Plan</strong> and the AI will build a 7-day study schedule based on your test performance and enrolled subjects.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Progress / Analytics -->
+      <section id="section-progress" style="display:none">
+        <div id="analytics-root">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading analytics…</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ── Profile Modal ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>👤 My Profile</h2>
+      <button class="modal-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="profile-alert" class="alert"></div>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+        <div class="avatar" style="width:56px;height:56px;font-size:1.5rem" id="profile-avatar-lg">?</div>
+        <div>
+          <div style="font-weight:700;font-size:1.05rem" id="profile-name-disp">—</div>
+          <div style="font-size:0.82rem;color:var(--clr-muted)" id="profile-email-disp">—</div>
+          <div style="font-size:0.75rem;color:var(--clr-muted)" id="profile-joined-disp">—</div>
+        </div>
+      </div>
+      <form id="profile-name-form" onsubmit="updateProfileName(event)">
+        <div class="form-group">
+          <label for="new-display-name">Display Name</label>
+          <input type="text" id="new-display-name" placeholder="Your name" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-update-name"
+                style="width:auto;padding:0.6rem 1.5rem">Update Name</button>
+      </form>
+      <hr style="border-color:var(--clr-border);margin:1.5rem 0">
+      <form id="change-pw-form" onsubmit="submitChangePassword(event)">
+        <div class="form-group">
+          <label for="cur-pw">Current Password</label>
+          <input type="password" id="cur-pw" required />
+        </div>
+        <div class="form-group">
+          <label for="new-pw">New Password <span style="color:var(--clr-muted);font-weight:400">(min 6 chars)</span></label>
+          <input type="password" id="new-pw" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-change-pw"
+                style="width:auto;padding:0.6rem 1.5rem">Change Password</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Test-taking Overlay ────────────────────────────────────────────── -->
+<div class="test-overlay" id="test-overlay">
+  <div class="test-overlay-inner">
+    <div class="test-overlay-header">
+      <h2 id="test-overlay-title">Test</h2>
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <span class="test-timer" id="test-timer"></span>
+        <button class="modal-close" onclick="closeTestOverlay()">✕</button>
+      </div>
+    </div>
+    <div class="test-overlay-body" id="test-overlay-body"></div>
+  </div>
+</div>
+
+<!-- ── Document AI Modal ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="ai-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🤖 Document AI — <span id="modal-file-title"></span></h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Loading state -->
+      <div class="loading-state" id="ai-loading">
+        <div class="spinner"></div>
+        <span>Analysing document with AI… this may take up to 30 seconds.</span>
+      </div>
+
+      <!-- Results -->
+      <div id="ai-results" style="display:none">
+        <div class="ai-tabs">
+          <button class="ai-tab active" onclick="switchAiTab('summary', this)">Summary</button>
+          <button class="ai-tab"        onclick="switchAiTab('flashcards', this)">Flashcards</button>
+          <button class="ai-tab"        onclick="switchAiTab('quiz', this)">Quiz</button>
+        </div>
+
+        <div class="ai-panel active" id="ai-panel-summary">
+          <div class="summary-text" id="summary-content"></div>
+        </div>
+
+        <div class="ai-panel" id="ai-panel-flashcards">
+          <div id="flashcards-content"></div>
+        </div>
+
+        <div class="ai-panel" id="ai-panel-quiz">
+          <div id="quiz-content"></div>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div id="ai-error" style="display:none" class="alert alert-error show"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/student.js"></script>
+</body>
+</html>

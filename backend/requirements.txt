@@ -4,7 +4,7 @@ groq
 python-dotenv
 python-multipart
 python-pptx
-PyPDF2
+pymupdf
 python-docx
 openpyxl
 pandas

@@ -13,17 +13,19 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  FolderOpen,
 } from "lucide-react";
 
 const navItems = [
-  { id: "upload", label: "Upload", icon: Upload },
-  { id: "notes", label: "Notes", icon: FileText },
-  { id: "flashcards", label: "Flashcards", icon: Layers },
-  { id: "mindmap", label: "Mind Map", icon: Brain },
-  { id: "quiz", label: "Quiz", icon: HelpCircle },
-  { id: "chat", label: "Chat", icon: MessageSquare },
-  { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-  { id: "study", label: "Study Mode", icon: BookOpen },
+  { id: "upload",           label: "Upload",          icon: Upload,      alwaysEnabled: true  },
+  { id: "study-materials",  label: "Study Materials", icon: FolderOpen,  alwaysEnabled: true  },
+  { id: "notes",            label: "Notes",           icon: FileText     },
+  { id: "flashcards",       label: "Flashcards",      icon: Layers       },
+  { id: "mindmap",          label: "Mind Map",        icon: Brain        },
+  { id: "quiz",             label: "Quiz",            icon: HelpCircle   },
+  { id: "chat",             label: "Chat",            icon: MessageSquare},
+  { id: "dashboard",        label: "Dashboard",       icon: BarChart3,   alwaysEnabled: true  },
+  { id: "study",            label: "Study Mode",      icon: BookOpen     },
 ];
 
 export default function Sidebar({ activeView, onViewChange, collapsed, onToggle, hasDocument }) {
@@ -56,7 +58,7 @@ export default function Sidebar({ activeView, onViewChange, collapsed, onToggle,
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = activeView === item.id;
-          const isDisabled = item.id !== "upload" && item.id !== "dashboard" && !hasDocument;
+          const isDisabled = !item.alwaysEnabled && !hasDocument;
           const Icon = item.icon;
 
           return (

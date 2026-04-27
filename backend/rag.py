@@ -119,3 +119,4 @@ def retrieve(query: str, collection_name: str = None, top_k: int = 5) -> list[di
 def get_current_collection() -> str | None:
     """Return the current collection name."""
     return _current_collection
+ 

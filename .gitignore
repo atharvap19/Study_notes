@@ -1,10 +1,16 @@
 # Dependencies
+node_modules/
 frontend/node_modules/
+auth-system/backend/node_modules/
 __pycache__/
 
 # Environment variables
 .env
 backend/.env
+auth-system/backend/.env
+
+# Logs
+logs/
 
 # Next.js
 frontend/.next/

@@ -1,7 +1,7 @@
 import os
 import re
 from pptx import Presentation
-from PyPDF2 import PdfReader
+import fitz
 from docx import Document
 from openpyxl import load_workbook
 
@@ -45,11 +45,12 @@ def format_chunks(chunks: list[dict]) -> str:
 # --- PDF: chunk by detected headings or by page ---
 
 def _chunk_pdf(path: str) -> list[dict]:
-    reader = PdfReader(path)
+    doc = fitz.open(path)
     chunks = []
 
-    for page_num, page in enumerate(reader.pages, 1):
-        page_text = page.extract_text()
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        page_text = page.get_text()
         if not page_text or not page_text.strip():
             continue
 
@@ -62,14 +63,14 @@ def _chunk_pdf(path: str) -> list[dict]:
                 if content.strip():
                     chunks.append({
                         "section": title,
-                        "source": f"Page {page_num}",
+                        "source": f"Page {page_num + 1}",
                         "content": content.strip(),
                     })
         else:
             # No headings detected — use whole page as one chunk
             chunks.append({
-                "section": f"Page {page_num} Content",
-                "source": f"Page {page_num}",
+                "section": f"Page {page_num + 1} Content",
+                "source": f"Page {page_num + 1}",
                 "content": page_text.strip(),
             })
 

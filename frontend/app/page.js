@@ -14,6 +14,7 @@ import QuizView from "../components/QuizView";
 import ChatView from "../components/ChatView";
 import DashboardView from "../components/DashboardView";
 import StudyMode from "../components/StudyMode";
+import StudyMaterialsView from "../components/StudyMaterialsView";
 
 export default function Home() {
   // Data state
@@ -126,6 +127,8 @@ export default function Home() {
             hasDocument={hasDocument}
           />
         );
+      case "study-materials":
+        return <StudyMaterialsView />;
       case "study":
         setShowStudyMode(true);
         return null;

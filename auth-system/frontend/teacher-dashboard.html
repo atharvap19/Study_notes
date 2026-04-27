@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard — StudyPlanner</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">📚</div>
+      <span class="logo-text">StudyPlanner</span>
+    </div>
+
+    <div class="nav-item active" onclick="showSection('overview')">
+      <span class="icon">🏠</span> Overview
+    </div>
+    <div class="nav-item" onclick="showSection('materials')">
+      <span class="icon">📁</span> Materials
+    </div>
+    <div class="nav-item" onclick="showSection('tests')">
+      <span class="icon">📝</span> Tests
+    </div>
+    <div class="nav-item" onclick="showSection('students')">
+      <span class="icon">👥</span> Analytics
+    </div>
+    <div class="nav-item" onclick="showSection('subjects')">
+      <span class="icon">🏷️</span> Subjects
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info" onclick="openProfile()" style="cursor:pointer" title="View profile">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="user-meta">
+          <div class="user-name" id="sidebar-name">Loading…</div>
+          <div class="user-role">Teacher</div>
+        </div>
+      </div>
+      <div class="nav-item" onclick="logout()" style="margin-top:0.4rem">
+        <span class="icon">🚪</span> Logout
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────── -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="topbar-title">Teacher Dashboard</h1>
+        <div class="subtitle" id="topbar-sub">Manage your classroom</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="alert-main" class="alert"></div>
+
+      <!-- ── Overview ──────────────────────────────────────────────────── -->
+      <section id="section-overview">
+        <div class="stats-strip">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-materials">—</div>
+            <div class="stat-label">Materials Uploaded</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-students">—</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-tests">—</div>
+            <div class="stat-label">Tests Created</div>
+          </div>
+        </div>
+        <div class="section-header">
+          <span class="section-title">👋 Welcome back, <span id="welcome-name"></span></span>
+        </div>
+        <div class="placeholder-box">
+          <div class="ph-icon">🚀</div>
+          <h3>More Features Coming Soon</h3>
+          <p>Upload study materials, create tests, and track student performance — all from this dashboard.</p>
+        </div>
+      </section>
+
+      <!-- ── Materials ─────────────────────────────────────────────────── -->
+      <section id="section-materials" style="display:none">
+        <div class="section-header">
+          <span class="section-title">📁 Study Materials</span>
+          <span class="badge" id="upload-count">0 files</span>
+        </div>
+
+        <div class="material-card" style="margin-bottom:1.5rem">
+          <div class="file-title" style="margin-bottom:1rem">📤 Upload New Material</div>
+          <div id="upload-alert" class="alert"></div>
+          <form id="upload-form" onsubmit="handleUpload(event)">
+            <div class="form-group">
+              <label for="upload-title">Title</label>
+              <input type="text" id="upload-title" placeholder="e.g. Chapter 3 — Thermodynamics" required />
+            </div>
+            <div class="form-group">
+              <label for="upload-subject">Subject</label>
+              <select id="upload-subject" required>
+                <option value="">— select subject —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="upload-file">File (PDF, PPTX, DOCX, XLSX — max 50 MB)</label>
+              <input type="file" id="upload-file" accept=".pdf,.pptx,.docx,.xlsx" required
+                     style="padding:0.6rem 0.8rem; cursor:pointer;" />
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-upload" style="width:auto;padding:0.65rem 1.8rem">
+              Upload
+            </button>
+          </form>
+        </div>
+
+        <div id="uploaded-list"></div>
+      </section>
+
+      <!-- ── Tests ─────────────────────────────────────────────────────── -->
+      <section id="section-tests" style="display:none">
+
+        <!-- Create Test Form -->
+        <div class="section-header">
+          <span class="section-title">📝 Tests</span>
+          <button class="btn btn-accent" style="font-size:0.82rem" onclick="toggleCreateForm()">+ Create Test</button>
+        </div>
+
+        <div id="create-test-panel" style="display:none" class="material-card" style="margin-bottom:1.5rem">
+          <div class="file-title" style="margin-bottom:1rem">🆕 New Test</div>
+          <div id="create-test-alert" class="alert"></div>
+          <form id="create-test-form" onsubmit="handleCreateTest(event)">
+            <div class="form-group">
+              <label for="test-title">Test Title</label>
+              <input type="text" id="test-title" placeholder="e.g. Unit 1 — Data Structures Quiz" required />
+            </div>
+            <div class="form-group">
+              <label for="test-subject">Subject</label>
+              <select id="test-subject" required>
+                <option value="">— select subject —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="test-duration">Duration (minutes)</label>
+              <input type="number" id="test-duration" value="30" min="5" max="180" required />
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-create-test" style="width:auto;padding:0.65rem 1.8rem">
+              Create Test
+            </button>
+          </form>
+        </div>
+
+        <!-- Tests list -->
+        <div id="tests-list"></div>
+
+        <!-- Question Manager (shown inline when teacher clicks Manage) -->
+        <div id="question-manager" style="display:none">
+          <div class="section-header" style="margin-top:2rem">
+            <span class="section-title" id="qm-title">Questions</span>
+            <button class="btn btn-ghost" style="font-size:0.8rem" onclick="closeQuestionManager()">✕ Close</button>
+          </div>
+          <div id="qm-alert" class="alert"></div>
+
+          <!-- Add Question Form -->
+          <div class="material-card" style="margin-bottom:1.5rem">
+            <div class="file-title" style="margin-bottom:1rem">➕ Add Question</div>
+            <form id="add-question-form" onsubmit="handleAddQuestion(event)">
+              <div class="form-group">
+                <label for="q-type">Type</label>
+                <select id="q-type" onchange="onQTypeChange(this.value)" required>
+                  <option value="mcq">MCQ (Multiple Choice)</option>
+                  <option value="true_false">True / False</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="q-text">Question</label>
+                <input type="text" id="q-text" placeholder="Enter question text…" required />
+              </div>
+
+              <!-- MCQ options -->
+              <div id="mcq-options-group">
+                <div class="form-group">
+                  <label>Options (one per line — mark correct with ✓)</label>
+                  <input type="text" class="mcq-opt" placeholder="Option A" style="margin-bottom:0.4rem" />
+                  <input type="text" class="mcq-opt" placeholder="Option B" style="margin-bottom:0.4rem" />
+                  <input type="text" class="mcq-opt" placeholder="Option C" style="margin-bottom:0.4rem" />
+                  <input type="text" class="mcq-opt" placeholder="Option D" />
+                </div>
+                <div class="form-group">
+                  <label for="q-correct-mcq">Correct Answer (paste exact option text)</label>
+                  <input type="text" id="q-correct-mcq" placeholder="e.g. Option B text" />
+                </div>
+              </div>
+
+              <!-- T/F correct answer -->
+              <div id="tf-options-group" style="display:none">
+                <div class="form-group">
+                  <label for="q-correct-tf">Correct Answer</label>
+                  <select id="q-correct-tf">
+                    <option value="True">True</option>
+                    <option value="False">False</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="q-marks">Marks</label>
+                <input type="number" id="q-marks" value="1" min="1" max="10" required style="width:80px" />
+              </div>
+
+              <button type="submit" class="btn btn-primary" id="btn-add-q" style="width:auto;padding:0.6rem 1.5rem">
+                Add Question
+              </button>
+            </form>
+          </div>
+
+          <!-- Existing questions -->
+          <div id="questions-list"></div>
+        </div>
+      </section>
+
+      <!-- ── Subjects ───────────────────────────────────────────────────── -->
+      <section id="section-subjects" style="display:none">
+        <div class="section-header">
+          <span class="section-title">🏷️ Subjects</span>
+        </div>
+
+        <div class="material-card" style="margin-bottom:1.5rem">
+          <div class="file-title" style="margin-bottom:1rem">➕ Add New Subject</div>
+          <div id="subject-alert" class="alert"></div>
+          <form id="add-subject-form" onsubmit="handleAddSubject(event)"
+                style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:220px;margin-bottom:0">
+              <label for="new-subject-name">Subject Name</label>
+              <input type="text" id="new-subject-name" placeholder="e.g. Organic Chemistry" required />
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-add-subject"
+                    style="width:auto;padding:0.65rem 1.5rem;margin-bottom:1.1rem">
+              Add Subject
+            </button>
+          </form>
+        </div>
+
+        <div id="subjects-list"></div>
+      </section>
+
+      <!-- ── Students / Analytics ──────────────────────────────────────── -->
+      <section id="section-students" style="display:none">
+        <div id="analytics-root">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading analytics…</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ── Profile Modal ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>👤 My Profile</h2>
+      <button class="modal-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="profile-alert" class="alert"></div>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+        <div class="avatar" style="width:56px;height:56px;font-size:1.5rem" id="profile-avatar-lg">?</div>
+        <div>
+          <div style="font-weight:700;font-size:1.05rem" id="profile-name-disp">—</div>
+          <div style="font-size:0.82rem;color:var(--clr-muted)" id="profile-email-disp">—</div>
+          <div style="font-size:0.75rem;color:var(--clr-muted)" id="profile-joined-disp">—</div>
+        </div>
+      </div>
+      <form id="profile-name-form" onsubmit="updateProfileName(event)">
+        <div class="form-group">
+          <label for="new-display-name">Display Name</label>
+          <input type="text" id="new-display-name" placeholder="Your name" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-update-name"
+                style="width:auto;padding:0.6rem 1.5rem">Update Name</button>
+      </form>
+      <hr style="border-color:var(--clr-border);margin:1.5rem 0">
+      <form id="change-pw-form" onsubmit="submitChangePassword(event)">
+        <div class="form-group">
+          <label for="cur-pw">Current Password</label>
+          <input type="password" id="cur-pw" required />
+        </div>
+        <div class="form-group">
+          <label for="new-pw">New Password <span style="color:var(--clr-muted);font-weight:400">(min 6 chars)</span></label>
+          <input type="password" id="new-pw" required />
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-change-pw"
+                style="width:auto;padding:0.6rem 1.5rem">Change Password</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="js/teacher.js"></script>
+</body>
+</html>

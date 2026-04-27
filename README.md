@@ -1,209 +1,249 @@
 <p align="center">
   <img src="https://img.shields.io/badge/AI-Powered-6366f1?style=for-the-badge&logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" />
   <img src="https://img.shields.io/badge/Next.js-14-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
   <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white" />
-  <img src="https://img.shields.io/badge/ChromaDB-FF6F00?style=for-the-badge&logo=databricks&logoColor=white" />
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logoColor=white" />
 </p>
 
-<h1 align="center">VidNotes AI</h1>
+<h1 align="center">StudyPlanner</h1>
 
 <p align="center">
-  <b>AI-powered document-to-study-material pipeline</b><br/>
-  Upload any document. Get notes, flashcards, quizzes, mind maps, and an AI tutor — instantly.
-</p>
-
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#tech-stack">Tech Stack</a> •
-  <a href="#api-reference">API Reference</a>
+  <b>AI-powered personalised study platform for students and teachers</b><br/>
+  Manage subjects, upload materials, take tests, track performance, generate AI study plans, and analyse documents — all in one place.
 </p>
 
 ---
 
-## What is VidNotes AI?
+## Overview
 
-VidNotes AI transforms raw documents (PDFs, PowerPoints, Word docs, Excel files) into a complete study toolkit. Instead of passively reading, you actively learn through AI-generated flashcards, quizzes, and interactive mind maps — with a RAG-powered AI tutor that can answer questions grounded in your document.
+StudyPlanner is a full-stack web application that combines a role-based learning management system with two AI-powered features:
 
-Think **NotebookLM** meets **Anki** meets **Duolingo**.
-
----
-
-## Features
-
-### Core Pipeline
-| Feature | Description |
-|---------|-------------|
-| **Smart Notes** | 10-section exam-focused study notes generated from any document |
-| **Flashcards** | 10-20 Q&A cards with difficulty levels (Easy/Medium/Hard) and explanations |
-| **Quiz Generation** | MCQ, True/False, and Short Answer questions with scoring |
-| **Mind Maps** | Interactive, expandable knowledge tree with color-coded depth |
-| **Key Concepts** | Auto-extracted definitions, theorems, formulas with category tags |
-| **Highlights** | Top 5-10 critical passages ranked by importance (1-10 scale) |
-
-### AI Chat (RAG-Powered)
-- Ask questions about your document
-- Answers grounded in semantic search via ChromaDB
-- Source citations with relevance scores
-- Conversation history support
-
-### Utilities
-| Feature | Description |
-|---------|-------------|
-| **Multi-language Translation** | Translate notes to Hindi, Marathi, Spanish, French, German, Japanese, Chinese |
-| **PDF Export** | Download a complete study pack (notes + concepts + flashcards + quiz) |
-| **Excel Intelligence** | Upload `.xlsx` files for statistical analysis — correlations, trends, missing data |
-| **Study Mode** | Timed focus flow: Notes → Flashcards → Quiz with progress tracking |
-| **Dashboard** | Track documents processed, flashcards completed, quiz scores, weak topics |
+- **AI Study Plan** — generates a personalised 7-day study schedule based on each student's test performance and enrolled subjects using Groq (Llama 3.3 70B)
+- **DocNotes AI** — converts any uploaded document (PDF, PPTX, DOCX, XLSX) into structured notes, flashcards, quizzes, mind maps, key concepts, and an AI chat tutor
 
 ---
 
 ## Architecture
 
+The project runs as three servers:
+
 ```
-┌─────────────────┐         ┌──────────────────────────────────────────┐
-│                 │  REST   │              FastAPI Backend              │
-│   Next.js 14    │◄───────►│                                          │
-│   React + TW    │         │  ┌──────────┐  ┌───────────┐            │
-│                 │         │  │ file_utils│  │ summarizer│            │
-│  ┌───────────┐  │         │  │ (chunking)│  │ (Groq LLM)│           │
-│  │ Sidebar   │  │         │  └─────┬────┘  └─────┬─────┘            │
-│  │ Main View │  │         │        │              │                  │
-│  │ RightPanel│  │         │        ▼              ▼                  │
-│  └───────────┘  │         │  ┌──────────┐  ┌───────────┐            │
-│                 │         │  │ ChromaDB  │  │ 6 Parallel│            │
-│                 │         │  │ (vectors) │  │ LLM Calls │            │
-└─────────────────┘         │  └──────────┘  └───────────┘            │
-                            └──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     StudyPlanner                        │
+│                                                         │
+│  ┌──────────────────┐     ┌──────────────────────────┐  │
+│  │  Express.js API  │     │   Next.js (DocNotes AI)  │  │
+│  │   Port 3000      │     │   Port 3001              │  │
+│  │                  │     │                          │  │
+│  │  - Auth (JWT)    │     │  - Upload documents      │  │
+│  │  - Materials     │     │  - AI Notes              │  │
+│  │  - Tests         │     │  - Flashcards & Quizzes  │  │
+│  │  - Analytics     │     │  - Mind Maps             │  │
+│  │  - Study Plans   │     │  - AI Chat Tutor         │  │
+│  │  - Notifications │     │                          │  │
+│  └────────┬─────────┘     └────────────┬─────────────┘  │
+│           │                            │                 │
+│           │               ┌────────────▼─────────────┐  │
+│           │               │  FastAPI (Python)         │  │
+│           │               │  Port 8000               │  │
+│           │               │                          │  │
+│           │               │  - Document parsing      │  │
+│           │               │  - AI summarisation      │  │
+│           │               │  - RAG / chat            │  │
+│           │               └────────────┬─────────────┘  │
+│           │                            │                 │
+│  ┌────────▼────────────────────────────▼─────────────┐  │
+│  │              MySQL + Groq API                      │  │
+│  └────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### Data Flow
+---
 
-1. **Upload** → User uploads PDF/PPTX/DOCX/XLSX
-2. **Chunk** → Smart chunking by headings, slides, or sections
-3. **Index** → Chunks embedded and stored in ChromaDB
-4. **Generate** → 6 LLM calls run in parallel via `ThreadPoolExecutor`:
-   - Notes, Key Concepts, Highlights, Flashcards, Mind Map, Quiz
-5. **Respond** → All results returned in a single JSON response
-6. **Interact** → Chat, translate, export, study mode
+## Features
+
+### Student Dashboard
+- View study materials uploaded by teachers, grouped by subject
+- Take timed tests with auto-submit countdown timer
+- View test results with per-question breakdown
+- Performance analytics: average score, pass rate, subject breakdown, score trend chart
+- AI Study Plan: personalised 7-day schedule generated by Groq based on your performance
+- In-app notifications (bell icon) for new tests published
+- DocNotes AI sidebar link to upload and analyse your own documents
+- Profile management (name, password)
+
+### Teacher Dashboard
+- Create and manage subjects
+- Upload study materials (PDF, PPTX, DOCX, XLSX) per subject
+- Create tests: add MCQ, True/False, and Short Answer questions
+- Publish tests (notifies all enrolled students instantly)
+- Close tests when done
+- View per-subject analytics: average score, pass rate, student performance table
+- Profile management (name, password)
+
+### DocNotes AI (separate Next.js app)
+- Upload any document (PDF, PPTX, DOCX, XLSX)
+- AI-generated structured study notes
+- Key concepts extraction (term, definition, category, why it matters)
+- Smart highlights (top 5–10 most important segments with importance score)
+- Flashcards with difficulty levels
+- Interactive quiz (MCQ, True/False, Short Answer)
+- Visual mind map
+- AI chat tutor — ask questions about the document with full context
+- Translation to any language
+- Excel data analysis with statistical insights
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Auth + API | Express.js, JWT, bcrypt, MySQL2 |
+| Database | MySQL 8.0 (10 tables) |
+| DocNotes frontend | Next.js 14, Tailwind CSS, React Flow |
+| Python AI backend | FastAPI, Python 3.12 |
+| Document parsing | PyMuPDF, python-pptx, python-docx, pandas |
+| RAG / vector search | ChromaDB, sentence-transformers |
+| AI model | Groq — Llama 3.3 70B Versatile |
+| Auth frontend | Vanilla HTML / CSS / JS |
+
+---
+
+## Database Schema
+
+```
+users              — id, name, email, password_hash, role (student/teacher)
+subjects           — id, name, teacher_id
+user_subjects      — user_id, subject_id  (enrolments)
+materials          — id, title, file_name, file_path, subject_id, uploaded_by
+tests              — id, title, subject_id, duration, total_marks, status
+test_questions     — id, test_id, question, type, options, correct_answer, marks
+test_attempts      — id, test_id, student_id, score, total_marks, status
+test_answers       — id, attempt_id, question_id, student_answer, is_correct
+study_plans        — id, student_id, plan_json, generated_at  (one per student, upserted)
+notifications      — id, user_id, message, type, is_read, created_at
+```
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-
-- **Python 3.10+**
-- **Node.js 18+**
-- **Groq API Key** — Get one free at [console.groq.com](https://console.groq.com)
+- Node.js 18+
+- Python 3.12
+- MySQL 8.0
+- A [Groq API key](https://console.groq.com/keys) (free)
 
 ### 1. Clone the repo
-
 ```bash
-git clone https://github.com/atharvap19/Study_notes.git
-cd Study_notes
+git clone https://github.com/your-username/studyplanner.git
+cd studyplanner
 ```
 
-### 2. Backend setup
-
+### 2. Set up the database
 ```bash
-cd backend
-
-# Create virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
-echo "GROQ_API_KEY=your_groq_api_key_here" > .env
-
-# Start the server
-uvicorn main:app --reload --port 8000
+mysql -u root -p < auth-system/database/schema.sql
+mysql -u root -p < auth-system/database/migrate_final.sql
 ```
 
-> **Note:** On first run, ChromaDB will download the `all-MiniLM-L6-v2` embedding model (~80MB). This is a one-time download.
+### 3. Configure environment variables
 
-### 3. Frontend setup
+**`auth-system/backend/.env`**
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=vidnotes_auth
 
-```bash
-cd frontend
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=24h
 
-# Install dependencies
-npm install
+PORT=3000
 
-# Configure environment
-echo "NEXT_PUBLIC_BACKEND_URL=http://localhost:8000" > .env.local
+DOCAI_BASE_URL=http://localhost:8000
 
-# Start the dev server
-npm run dev
+GROQ_API_KEY=your_groq_api_key
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-### 4. Open the app
+**`backend/.env`**
+```env
+GROQ_API_KEY=your_groq_api_key
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_MODEL=llama-3.3-70b-versatile
+```
 
-Navigate to [http://localhost:3000](http://localhost:3000) and upload a document.
+**`frontend/.env.local`**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
----
+### 4. Install dependencies
 
-## Tech Stack
+```bash
+# Express backend
+cd auth-system/backend && npm install
 
-### Backend
-| Technology | Purpose |
-|-----------|---------|
-| **FastAPI** | REST API server with async support |
-| **Groq** | LLM inference (Llama 3.3-70B-Versatile) |
-| **ChromaDB** | In-memory vector database for RAG |
-| **all-MiniLM-L6-v2** | Sentence embeddings for semantic search |
-| **pandas** | Excel statistical analysis |
-| **fpdf2** | PDF study pack generation |
-| **PyPDF2 / python-pptx / python-docx** | Document parsing |
+# Python backend
+cd backend && pip install -r requirements.txt
 
-### Frontend
-| Technology | Purpose |
-|-----------|---------|
-| **Next.js 14** | React framework with App Router |
-| **Tailwind CSS** | Utility-first styling (dark mode) |
-| **Framer Motion** | Animations and transitions |
-| **Lucide React** | Icon system |
-| **React Flow** | Interactive mind map visualization |
-| **react-markdown** | Markdown rendering for notes |
+# Next.js frontend
+cd frontend && npm install
+```
+
+### 5. Start all servers
+
+```bash
+# Terminal 1 — Express API (port 3000)
+cd auth-system/backend && node server.js
+
+# Terminal 2 — FastAPI (port 8000)
+cd backend && uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Terminal 3 — Next.js DocNotes AI (port 3001)
+cd frontend && npm run dev
+```
+
+Then open **http://localhost:3000** to log in.
 
 ---
 
 ## Project Structure
 
 ```
-vidnotes-ai/
-├── backend/
-│   ├── main.py              # FastAPI server + endpoints
-│   ├── summarizer.py         # LLM prompts + Groq integration
-│   ├── rag.py                # ChromaDB vector store
-│   ├── file_utils.py         # Document parsing + smart chunking
-│   └── requirements.txt      # Python dependencies
-│
-├── frontend/
+studyplanner/
+├── auth-system/
+│   ├── backend/              # Express.js API
+│   │   ├── controllers/      # auth, student, teacher, test logic
+│   │   ├── routes/           # auth, student, teacher routes
+│   │   ├── middleware/       # JWT verification
+│   │   ├── utils/            # groq.js (AI calls)
+│   │   └── server.js
+│   ├── frontend/             # Vanilla HTML/CSS/JS dashboards
+│   │   ├── login.html
+│   │   ├── student-dashboard.html
+│   │   ├── teacher-dashboard.html
+│   │   ├── css/styles.css
+│   │   └── js/               # auth.js, student.js, teacher.js
+│   └── database/             # SQL schema and migrations
+├── backend/                  # FastAPI Python AI backend
+│   ├── main.py               # API routes
+│   ├── summarizer.py         # All AI calls (notes, flashcards, quiz, etc.)
+│   ├── rag.py                # ChromaDB vector search
+│   ├── file_utils.py         # Document parsing
+│   └── requirements.txt
+├── frontend/                 # Next.js DocNotes AI app
 │   ├── app/
-│   │   ├── page.js           # Main page + state management
-│   │   ├── layout.js         # Root layout
-│   │   └── globals.css       # Global styles
+│   │   ├── page.js           # Upload page
+│   │   └── document-ai/      # Analysis results page
 │   ├── components/
-│   │   ├── Sidebar.js        # Navigation sidebar
-│   │   ├── RightPanel.js     # Concepts + highlights panel
-│   │   ├── UploadView.js     # File upload with drag-drop
-│   │   ├── NotesView.js      # Study notes display
-│   │   ├── FlashcardsView.js # Flashcard review UI
-│   │   ├── QuizView.js       # Quiz interface
-│   │   ├── MindMapView.js    # Interactive mind map
-│   │   ├── ChatView.js       # RAG-powered chat
-│   │   ├── DashboardView.js  # Progress dashboard
-│   │   ├── StudyMode.js      # Timed study sessions
-│   │   └── LoadingSkeleton.js# Loading placeholders
 │   └── utils/
-│       └── api.js            # Backend API client
-│
+├── chat.py                   # Terminal chatbot for testing Groq API
 └── README.md
 ```
 
@@ -211,104 +251,67 @@ vidnotes-ai/
 
 ## API Reference
 
-### `POST /process-file`
-Upload and process a document. Returns all study materials.
+### Auth (Express — port 3000)
 
-**Request:** `multipart/form-data` with `file` field
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register student or teacher |
+| POST | `/api/auth/login` | Login, returns JWT |
+| GET | `/api/auth/me` | Get current user info |
+| PATCH | `/api/auth/profile` | Update display name |
+| PATCH | `/api/auth/change-password` | Change password |
 
-**Response:**
-```json
-{
-  "text": "raw extracted text",
-  "chunks": ["chunk1", "chunk2"],
-  "notes": "## Section 1\n...",
-  "key_concepts": [{"term": "...", "definition": "...", "category": "..."}],
-  "highlights": [{"text": "...", "importance": 9, "reason": "..."}],
-  "flashcards": [{"question": "...", "answer": "...", "difficulty": "medium"}],
-  "mindmap": {"label": "Root", "children": [...]},
-  "quiz": [{"type": "mcq", "question": "...", "options": [...], "answer": "..."}],
-  "excel_analysis": null
-}
-```
+### Student (requires JWT)
 
-### `POST /chat`
-RAG-powered Q&A with the uploaded document.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/student/dashboard` | User info |
+| GET | `/api/student/materials` | Enrolled subject materials |
+| GET | `/api/student/tests` | Available tests + attempt status |
+| GET | `/api/student/tests/:id/start` | Fetch questions to start test |
+| POST | `/api/student/tests/:id/submit` | Submit answers |
+| GET | `/api/student/tests/:id/result` | View result with answers |
+| GET | `/api/student/analytics` | Performance stats |
+| GET | `/api/student/study-plan` | Fetch saved study plan |
+| POST | `/api/student/study-plan` | Generate new AI study plan |
+| GET | `/api/student/notifications` | Get notifications |
+| PATCH | `/api/student/notifications/read` | Mark all as read |
 
-**Request:**
-```json
-{
-  "question": "What is the main thesis?",
-  "document_text": "...",
-  "chat_history": []
-}
-```
+### Teacher (requires JWT)
 
-### `POST /translate`
-Translate content to a target language.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/teacher/dashboard` | Overview stats |
+| GET/POST | `/api/teacher/subjects` | List / create subjects |
+| DELETE | `/api/teacher/subjects/:id` | Delete subject |
+| GET/POST | `/api/teacher/materials` | List / upload materials |
+| DELETE | `/api/teacher/materials/:id` | Delete material |
+| GET/POST | `/api/teacher/tests` | List / create tests |
+| POST | `/api/teacher/tests/:id/questions` | Add question to test |
+| PATCH | `/api/teacher/tests/:id/publish` | Publish test (notifies students) |
+| PATCH | `/api/teacher/tests/:id/close` | Close test |
+| GET | `/api/teacher/analytics` | Subject performance analytics |
 
-**Request:**
-```json
-{
-  "text": "Study notes content...",
-  "target_language": "Spanish"
-}
-```
+### DocNotes AI (FastAPI — port 8000)
 
-### `POST /export-pdf`
-Generate a downloadable PDF study pack.
-
-**Request:**
-```json
-{
-  "notes": "...",
-  "key_concepts": [...],
-  "flashcards": [...],
-  "quiz": [...]
-}
-```
-
----
-
-## Supported File Types
-
-| Format | Chunking Strategy |
-|--------|------------------|
-| **PDF** | By detected headings (numbered sections, ALL CAPS) or by page |
-| **PPTX** | Each slide as a separate chunk with title |
-| **DOCX** | By Word heading styles (Heading 1, 2, etc.) |
-| **XLSX** | Each sheet as a chunk + pandas statistical analysis |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/upload` | Upload and parse document |
+| POST | `/summarize` | Generate structured notes |
+| POST | `/key-concepts` | Extract key concepts |
+| POST | `/highlights` | Detect important segments |
+| POST | `/flashcards` | Generate flashcards |
+| POST | `/mindmap` | Generate mind map tree |
+| POST | `/quiz` | Generate quiz |
+| POST | `/chat` | Chat with document (RAG) |
+| POST | `/translate` | Translate content |
 
 ---
 
-## Performance
+## Terminal Chat (Groq API tester)
 
-- **Parallel LLM calls** — 6 content generation tasks run concurrently via `ThreadPoolExecutor`
-- **Processing time** — ~15-25 seconds per document (dependent on Groq API latency)
-- **RAG retrieval** — Sub-second semantic search with ChromaDB in-memory vectors
-- **Embedding model** — `all-MiniLM-L6-v2` (384-dim, fast inference)
-
----
-
-## Environment Variables
-
-### Backend (`backend/.env`)
-```
-GROQ_API_KEY=gsk_your_key_here
+```bash
+python chat.py
 ```
 
-### Frontend (`frontend/.env.local`)
-```
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
-```
-
----
-
-## License
-
-MIT
-
----
-
-<p align="center">
-  Built with Groq, ChromaDB, Next.js, and FastAPI
-</p>
+Opens an interactive multi-turn chat with Llama 3.3 70B. Type `clear` to reset context, `exit` to quit.

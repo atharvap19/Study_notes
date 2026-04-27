@@ -367,3 +367,112 @@ async def export_pdf(req: ExportRequest):
         media_type="application/pdf",
         headers={"Content-Disposition": "attachment; filename=DocNotes_StudyPack.pdf"},
     )
+
+
+# ---------------------------------------------------------------------------
+# /process-document  — called by Node.js auth backend (server-to-server)
+# Accepts a server-side file path instead of a multipart upload.
+# The existing /process-file endpoint is intentionally untouched.
+# ---------------------------------------------------------------------------
+
+class ProcessDocumentRequest(BaseModel):
+    file_path: str
+
+
+@app.post("/process-document")
+async def process_document(req: ProcessDocumentRequest):
+    """
+    Process a document that already exists on the server filesystem.
+    Called by the Node.js backend after a teacher uploads a file.
+    Returns identical shape to /process-file.
+    """
+    file_path = req.file_path
+
+    if not os.path.isabs(file_path) or not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {ext}. Allowed: {', '.join(ALLOWED_EXTENSIONS)}",
+        )
+
+    file_name = os.path.basename(file_path)
+
+    # ── Extract chunks ────────────────────────────────────────────────────
+    excel_analysis = None
+    try:
+        print(f"[process-document] Extracting: {file_name}")
+        chunks = extract_chunks(file_path)
+        structured_text = format_chunks(chunks)
+        if not structured_text.strip():
+            raise ValueError("No text could be extracted from the file.")
+        print(f"  -> {len(chunks)} chunks, {len(structured_text)} chars")
+
+        if ext == ".xlsx":
+            try:
+                excel_analysis = analyze_excel_data(file_path)
+            except Exception as e:
+                print(f"  -> Excel analysis failed (non-fatal): {e}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Text extraction failed: {str(e)}")
+
+    # ── Index in ChromaDB ─────────────────────────────────────────────────
+    try:
+        import hashlib
+        doc_id = hashlib.md5(file_name.encode()).hexdigest()[:12]
+        index_document(doc_id, chunks)
+        print(f"  -> Indexed in ChromaDB (doc_id={doc_id})")
+    except Exception as e:
+        print(f"  → ChromaDB indexing failed (non-fatal): {e}")
+
+    # ── Run 6 LLM calls in parallel ───────────────────────────────────────
+    notes = ""
+    key_concepts, highlights, flashcards, quiz = [], [], [], []
+    mindmap = None
+
+    print("[process-document] Running parallel LLM calls…")
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        f_notes      = executor.submit(generate_notes,         structured_text)
+        f_concepts   = executor.submit(extract_key_concepts,   structured_text)
+        f_highlights = executor.submit(detect_highlights,      structured_text)
+        f_flashcards = executor.submit(generate_flashcards,    structured_text)
+        f_mindmap    = executor.submit(generate_mindmap,       structured_text)
+        f_quiz       = executor.submit(generate_quiz,          structured_text)
+
+        try:
+            notes = f_notes.result()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Note generation failed: {str(e)}")
+
+        for future, name in [
+            (f_concepts,   "key_concepts"),
+            (f_highlights, "highlights"),
+            (f_flashcards, "flashcards"),
+            (f_mindmap,    "mindmap"),
+            (f_quiz,       "quiz"),
+        ]:
+            try:
+                result = future.result()
+                if   name == "key_concepts": key_concepts = result
+                elif name == "highlights":   highlights   = result
+                elif name == "flashcards":   flashcards   = result
+                elif name == "mindmap":      mindmap      = result
+                elif name == "quiz":         quiz         = result
+            except Exception as e:
+                print(f"  -> {name} failed (non-fatal): {e}")
+
+    print("[process-document] Done.")
+    chunks_meta = [{"section": c["section"], "source": c["source"]} for c in chunks]
+    return {
+        "text":           structured_text,
+        "notes":          notes,
+        "chunks":         chunks_meta,
+        "key_concepts":   key_concepts,
+        "highlights":     highlights,
+        "flashcards":     flashcards,
+        "mindmap":        mindmap,
+        "quiz":           quiz,
+        "excel_analysis": excel_analysis,
+    }

@@ -1,11 +1,13 @@
 import os
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize Groq client using the API key from .env
-_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+_client = OpenAI(
+    base_url=os.environ.get("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
 
 NOTES_PROMPT = """You are an expert educator, researcher, and top-tier note-maker.
 
@@ -314,15 +316,23 @@ INPUT DOCUMENT:
 {transcript}"""
 
 
-def _call_groq(prompt: str, temperature: float = 0.4, max_tokens: int = 8192) -> str:
-    """Shared helper to call Groq LLM."""
-    response = _client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+def _call_groq(prompt: str, temperature: float = 0.4, max_tokens: int = 16384) -> str:
+    """Call Groq via OpenAI-compatible endpoint with streaming."""
+    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    completion = _client.chat.completions.create(
+        model=model,
         messages=[{"role": "user", "content": prompt}],
         temperature=temperature,
         max_tokens=max_tokens,
+        stream=True,
     )
-    return response.choices[0].message.content.strip()
+    result = []
+    for chunk in completion:
+        if not getattr(chunk, "choices", None):
+            continue
+        if chunk.choices and chunk.choices[0].delta.content is not None:
+            result.append(chunk.choices[0].delta.content)
+    return "".join(result).strip()
 
 
 def generate_notes(transcript: str) -> str:
@@ -503,13 +513,21 @@ DOCUMENT:
 
     messages.append({"role": "user", "content": question})
 
-    response = _client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+    model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    completion = _client.chat.completions.create(
+        model=model,
         messages=messages,
         temperature=0.4,
-        max_tokens=4096,
+        max_tokens=8192,
+        stream=True,
     )
-    return response.choices[0].message.content.strip()
+    result = []
+    for chunk in completion:
+        if not getattr(chunk, "choices", None):
+            continue
+        if chunk.choices and chunk.choices[0].delta.content is not None:
+            result.append(chunk.choices[0].delta.content)
+    return "".join(result).strip()
 
 
 def translate_text(text: str, target_language: str) -> str:
